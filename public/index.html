@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BERT Similarity Checker</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 600px;
+      margin: auto;
+      padding: 20px;
+    }
+    input, textarea, button {
+      width: 100%;
+      margin: 10px 0;
+      padding: 10px;
+      font-size: 16px;
+    }
+    button {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    #results {
+      margin-top: 20px;
+      font-size: 18px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h1>BERT Similarity Checker</h1>
+  <label for="text1">Your Brand:</label>
+  <input type="text" id="text1" placeholder="Enter your brand name" />
+
+  <label for="text2">Conflicting Brands:</label>
+  <textarea id="text2" rows="6" placeholder="Enter conflicting brand names, one per line"></textarea>
+
+  <button id="calculate">Calculate Similarity</button>
+
+  <div id="results"></div>
+
+  <script>
+    document.getElementById("calculate").addEventListener("click", async () => {
+      const text1 = document.getElementById("text1").value.trim();
+      const text2 = document.getElementById("text2").value.trim();
+
+      if (!text1 || !text2) {
+        alert("Please fill in both fields!");
+        return;
+      }
+
+      const conflictingBrands = text2.split("\n").map((brand) => brand.trim());
+      const resultsDiv = document.getElementById("results");
+      resultsDiv.innerHTML = "Calculating...";
+
+      const results = [];
+      for (const brand of conflictingBrands) {
+        try {
+          const response = await fetch("http://localhost:3000/api/similarity", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ text1, text2: brand }),
+          });
+          const data = await response.json();
+          if (response.ok) {
+            results.push(`${brand}: ${data.similarity.toFixed(2)}%`);
+          } else {
+            results.push(`${brand}: Error (${data.error})`);
+          }
+        } catch (err) {
+          console.error(err);
+          results.push(`${brand}: Failed to calculate`);
+        }
+      }
+
+      resultsDiv.innerHTML = results.join("<br>");
+    });
+  </script>
+</body>
+</html>
