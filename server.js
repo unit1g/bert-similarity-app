@@ -3,7 +3,7 @@ const cors = require("cors");
 const { pipeline } = require("@xenova/transformers");
 
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3004;
 
 // Middleware
 app.use(cors());
